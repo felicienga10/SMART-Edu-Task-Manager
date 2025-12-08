@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Submission for: {{ assignment.task.title }}</h2>
+        <h4>Student: {{ assignment.student.name }}</h4>
+
+        {% if submission %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Submission Content</h5>
+                <p>{{ submission.content or 'No text content provided' }}</p>
+                {% if submission.file_path %}
+                <h6>Attached File:</h6>
+                <a href="{{ url_for('teacher.download_file', submission_id=submission.id) }}" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Download File
+                </a>
+                {% endif %}
+                <p class="mt-3"><small class="text-muted">Submitted on: {{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-warning">
+            No submission found for this assignment.
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Feedback & Grading</h5>
+                
+                {% if submission %}
+                <!-- Display existing feedback -->
+                {% if submission.score is not none or submission.feedback %}
+                <div class="alert alert-success">
+                    <h6>Current Feedback:</h6>
+                    {% if submission.score is not none %}
+                    <p><strong>Score:</strong> {{ submission.score }}/100</p>
+                    {% endif %}
+                    {% if submission.feedback %}
+                    <p><strong>Comments:</strong><br>{{ submission.feedback|replace('\n', '<br>')|safe }}</p>
+                    {% endif %}
+                    {% if submission.feedback_provided_at %}
+                    <p><small class="text-muted">Graded on: {{ submission.feedback_provided_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    No feedback provided yet.
+                </div>
+                {% endif %}
+                
+                <!-- Feedback form -->
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="score" class="form-label">Score (0-100)</label>
+                        <input type="number" class="form-control" id="score" name="score" 
+                               min="0" max="100" value="{{ submission.score if submission else '' }}" 
+                               placeholder="Enter score">
+                    </div>
+                    <div class="mb-3">
+                        <label for="feedback" class="form-label">Feedback Comments</label>
+                        <textarea class="form-control" id="feedback" name="feedback" rows="4" 
+                                  placeholder="Provide constructive feedback...">{{ submission.feedback if submission else '' }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-save"></i> {{ 'Update Feedback' if submission else 'Provide Feedback' }}
+                    </button>
+                </form>
+                {% else %}
+                <div class="alert alert-warning">
+                    Cannot provide feedback - no submission received yet.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<a href="{{ url_for('teacher.task_progress', task_id=assignment.task.id) }}" class="btn btn-secondary">
+    <i class="fas fa-arrow-left"></i> Back to Progress
+</a>
+{% endblock %}

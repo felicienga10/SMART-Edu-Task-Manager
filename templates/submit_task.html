@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2>Submit Task: {{ assignment.task.title }}</h2>
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.content.label(class="form-label") }}
+                {{ form.content(class="form-control", rows=6, placeholder="Enter your submission here...") }}
+                {% for error in form.content.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.file.label(class="form-label") }}
+                {{ form.file(class="form-control") }}
+                <small class="form-text text-muted">Optional: Upload a file (PDF, DOC, DOCX, TXT, JPG, PNG up to 10MB)</small>
+                {% for error in form.file.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            {{ form.submit(class="btn btn-success") }}
+        </form>
+        <a href="{{ url_for('student.view_task', assignment_id=assignment.id) }}" class="btn btn-secondary mt-3">Back to Task</a>
+    </div>
+</div>
+{% endblock %}

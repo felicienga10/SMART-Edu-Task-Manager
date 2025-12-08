@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Edit Class: {{ class_obj.name }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('admin.manage_classes') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Classes
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Class Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control") }}
+                        {% for error in form.name.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", rows=3) }}
+                        {% for error in form.description.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('admin.manage_classes') }}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Class Statistics -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Class Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h4 class="text-primary">{{ class_obj.students|length }}</h4>
+                        <small>Students</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 class="text-success">{{ class_obj.teachers|length }}</h4>
+                        <small>Teachers</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h4 class="text-info">{{ class_obj.created_at.strftime('%Y-%m-%d') }}</h4>
+                        <small>Created</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Class Section -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0 text-danger">Danger Zone</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Once you delete this class, there is no going back. Please be certain.</p>
+                <form method="POST" action="{{ url_for('admin.delete_class', class_id=class_obj.id) }}" onsubmit="return confirm('Are you absolutely sure? This will only work if no students or teachers are assigned to this class.')">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Delete Class
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

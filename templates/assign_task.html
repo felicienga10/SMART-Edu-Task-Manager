@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2>Assign Task: {{ task.title }}</h2>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.students.label(class="form-label") }}
+                {{ form.students(class="form-select", multiple=True) }}
+                <small class="form-text text-muted">Hold Ctrl (or Cmd) to select multiple students</small>
+                {% for error in form.students.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+        <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

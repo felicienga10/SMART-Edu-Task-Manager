@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Student Dashboard</h2>
+<p>Welcome, {{ current_user.name }}!</p>
+
+<h3>Your Tasks</h3>
+{% if assignments %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Task</th>
+            <th>Priority</th>
+            <th>Deadline</th>
+            <th>Status</th>
+            <th>Score</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for assignment in assignments %}
+        <tr>
+            <td>{{ assignment.task.title }}</td>
+            <td>
+                <span class="badge 
+                    {% if assignment.task.priority == 'urgent_important' %}bg-danger
+                    {% elif assignment.task.priority == 'high_priority' %}bg-warning
+                    {% elif assignment.task.priority == 'medium_priority' %}bg-info
+                    {% else %}bg-secondary{% endif %}">
+                    {{ assignment.task.priority.replace('_', ' ').title() }}
+                </span>
+            </td>
+            <td>{{ assignment.task.deadline.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>
+                <span class="badge
+                    {% if assignment.status == 'pending' %}bg-secondary
+                    {% elif assignment.status == 'in_progress' %}bg-primary
+                    {% elif assignment.status == 'completed' %}bg-success
+                    {% elif assignment.status == 'overdue' %}bg-danger{% endif %}">
+                    {{ assignment.status.replace('_', ' ').title() }}
+                </span>
+                {% if assignment.is_overdue and assignment.status != 'completed' %}
+                <span class="badge bg-warning text-dark ms-1">Overdue</span>
+                {% endif %}
+            </td>
+            <td>
+                {% set submission = assignment.submissions|first if assignment.submissions else none %}
+                {% if submission and submission.score is not none %}
+                    <span class="badge 
+                        {% if submission.score >= 90 %}bg-success
+                        {% elif submission.score >= 70 %}bg-info
+                        {% elif submission.score >= 50 %}bg-warning
+                        {% else %}bg-danger{% endif %}">
+                        {{ submission.score }}/100
+                    </span>
+                    {% if submission.feedback_provided_at %}
+                    <i class="fas fa-comment text-primary ms-1" title="Feedback available"></i>
+                    {% endif %}
+                {% else %}
+                    <span class="text-muted">Pending</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if assignment.status == 'pending' %}
+                    <a href="{{ url_for('student.start_task', assignment_id=assignment.id) }}" class="btn btn-sm btn-primary">Start</a>
+                {% elif assignment.status == 'in_progress' %}
+                    <a href="{{ url_for('student.submit_task', assignment_id=assignment.id) }}" class="btn btn-sm btn-success">Submit</a>
+                {% endif %}
+                <a href="{{ url_for('student.view_task', assignment_id=assignment.id) }}" class="btn btn-sm btn-info">View</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No tasks assigned yet.</p>
+{% endif %}
+{% endblock %}

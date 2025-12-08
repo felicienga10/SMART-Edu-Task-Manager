@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2>Create New Task</h2>
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.title.label(class="form-label") }}
+                {{ form.title(class="form-control") }}
+                {% for error in form.title.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.description.label(class="form-label") }}
+                {{ form.description(class="form-control", rows=4) }}
+                {% for error in form.description.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.deadline.label(class="form-label") }}
+                {{ form.deadline(class="form-control", type="datetime-local") }}
+                {% for error in form.deadline.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.priority.label(class="form-label") }}
+                {{ form.priority(class="form-select") }}
+                {% for error in form.priority.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+                <small class="form-text text-muted">AI suggestion: Based on the description, we suggest <strong>{{ suggested_priority.replace('_', ' ').title() if suggested_priority else 'Medium Priority' }}</strong></small>
+            </div>
+            <div class="mb-3">
+                {{ form.instructions.label(class="form-label") }}
+                {{ form.instructions(class="form-control", rows=3) }}
+            </div>
+            <div class="mb-3">
+                {{ form.task_file.label(class="form-label") }}
+                {{ form.task_file(class="form-control") }}
+                <small class="form-text text-muted">Optional: Attach a file for students to work on (PDF, DOC, DOCX, TXT, PPT, XLS, JPG, PNG up to 20MB)</small>
+                {% for error in form.task_file.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.assigned_classes.label(class="form-label") }}
+                {{ form.assigned_classes(class="form-select", multiple=True, size=5) }}
+                <small class="form-text text-muted">
+                    <i class="fas fa-info-circle"></i> <strong>Multi-Select:</strong> Hold Ctrl (or Cmd) to select multiple classes.
+                    All students in the selected classes will be assigned this task.
+                    <br><strong>Tip:</strong> You can also create the task first and assign classes later using the "Assign Task" option.
+                </small>
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+</div>
+{% endblock %}

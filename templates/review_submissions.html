@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Review Submissions - {{ task.title }}</h2>
+
+<div class="mb-3">
+    <p><strong>Deadline:</strong> {{ task.deadline.strftime('%Y-%m-%d %H:%M') }}</p>
+    <p><strong>Priority:</strong> 
+        <span class="badge
+            {% if task.priority == 'urgent_important' %}bg-danger
+            {% elif task.priority == 'high_priority' %}bg-warning
+            {% elif task.priority == 'medium_priority' %}bg-info
+            {% else %}bg-secondary{% endif %}">
+            {{ task.priority.replace('_', ' ').title() }}
+        </span>
+    </p>
+    {% if task.file_path %}
+    <p><strong>Task File:</strong> 
+        <a href="{{ url_for('teacher.download_task_file', task_id=task.id) }}" class="btn btn-sm btn-info">
+            <i class="fas fa-download"></i> Download Task File
+        </a>
+    </p>
+    {% endif %}
+</div>
+
+{% if submissions_data %}
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Student Name</th>
+                <th>Class</th>
+                <th>Status</th>
+                <th>Submission Date</th>
+                <th>Content</th>
+                <th>File</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in submissions_data %}
+            <tr>
+                <td><strong>{{ data.student.name }}</strong></td>
+                <td>{{ data.student.class_name or 'N/A' }}</td>
+                <td>
+                    {% if data.assignment.status == 'completed' %}
+                        <span class="badge bg-success">Completed</span>
+                    {% elif data.assignment.status == 'in_progress' %}
+                        <span class="badge bg-primary">In Progress</span>
+                    {% elif data.assignment.is_overdue %}
+                        <span class="badge bg-danger">Overdue</span>
+                    {% else %}
+                        <span class="badge bg-warning">Pending</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if data.submission %}
+                        {{ data.submission.submitted_at.strftime('%Y-%m-%d %H:%M') }}
+                    {% else %}
+                        <span class="text-muted">Not submitted</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if data.submission and data.submission.content %}
+                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                data-toggle="modal" data-target="#contentModal{{ data.assignment.id }}">
+                            View Content
+                        </button>
+                    {% else %}
+                        <span class="text-muted">No content</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if data.submission and data.submission.file_path %}
+                        <a href="{{ url_for('teacher.download_file', submission_id=data.submission.id) }}" 
+                           class="btn btn-sm btn-success">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                    {% else %}
+                        <span class="text-muted">No file</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('teacher.view_submission', assignment_id=data.assignment.id) }}" 
+                       class="btn btn-sm btn-info">Full Review</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Content Modals -->
+{% for data in submissions_data %}
+{% if data.submission and data.submission.content %}
+<div class="modal fade" id="contentModal{{ data.assignment.id }}" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Submission Content - {{ data.student.name }}</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Submitted Content:</label>
+                    <div class="border p-3 bg-light" style="min-height: 200px; white-space: pre-wrap;">
+                        {{ data.submission.content }}
+                    </div>
+                </div>
+                {% if data.submission.file_path %}
+                <div class="form-group">
+                    <label>Attached File:</label>
+                    <a href="{{ url_for('teacher.download_file', submission_id=data.submission.id) }}" 
+                       class="btn btn-primary">
+                        <i class="fas fa-download"></i> Download File
+                    </a>
+                </div>
+                {% endif %}
+                <p class="text-muted"><small>Submitted on: {{ data.submission.submitted_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+            </div>
+            <div class="modal-footer">
+                <a href="{{ url_for('teacher.view_submission', assignment_id=data.assignment.id) }}" 
+                   class="btn btn-info">Full Review</a>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% else %}
+<div class="alert alert-info">
+    <h4>No assignments found for this task.</h4>
+    <p>This task has not been assigned to any students yet.</p>
+</div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+    <a href="{{ url_for('teacher.task_progress', task_id=task.id) }}" class="btn btn-info">View Progress</a>
+</div>
+{% endblock %}

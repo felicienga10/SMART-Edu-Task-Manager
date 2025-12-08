@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="jumbotron">
+    <h1 class="display-4">Welcome to SMART Edu Task Manager</h1>
+    <p class="lead">Simplify how teachers assign tasks and how students organize and complete them with priority-based classification.</p>
+    <hr class="my-4">
+    <p>Choose your role to get started:</p>
+    <a class="btn btn-primary btn-lg" href="{{ url_for('auth.register_teacher') }}" role="button">Register as Teacher</a>
+    <a class="btn btn-secondary btn-lg" href="{{ url_for('auth.register_student') }}" role="button">Register as Student</a>
+    <p class="mt-3">Already have an account? <a href="{{ url_for('auth.login') }}">Login here</a></p>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-6">
+        <h3>For Teachers</h3>
+        <ul>
+            <li>Create and organize tasks with priority levels</li>
+            <li>Assign tasks to individual students or entire classes</li>
+            <li>Monitor student progress in real-time</li>
+            <li>Track completion rates and identify struggling students</li>
+        </ul>
+    </div>
+    <div class="col-md-6">
+        <h3>For Students</h3>
+        <ul>
+            <li>View all assigned tasks in one dashboard</li>
+            <li>Tasks automatically sorted by priority and deadline</li>
+            <li>Easy submission interface</li>
+            <li>Focus on what matters most with smart prioritization</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

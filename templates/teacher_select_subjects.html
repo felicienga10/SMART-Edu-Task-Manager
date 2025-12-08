@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Select Subjects You Teach</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Subject Selection</h5>
+            </div>
+            <div class="card-body">
+                {% if teacher_classes %}
+                <div class="alert alert-info">
+                    <h6>Your Classes:</h6>
+                    <ul class="mb-0">
+                        {% for class_obj in teacher_classes %}
+                        <li><strong>{{ class_obj.name }}</strong> - {{ class_obj.subjects|length }} subject(s) available</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.subjects.label(class="form-label") }}
+                        {{ form.subjects(class="form-select", multiple=True, size=8) }}
+                        <small class="form-text text-muted">
+                            <i class="fas fa-info-circle"></i> Select the subjects you teach.
+                            Hold Ctrl (Cmd on Mac) to select multiple subjects.
+                        </small>
+                        {% for error in form.subjects.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+                {% else %}
+                <div class="alert alert-warning">
+                    <h5>No Classes Assigned</h5>
+                    <p>You haven't been assigned to any classes yet. Please contact an administrator to assign you to classes.</p>
+                    <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if teacher_classes %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Available Subjects by Class</h5>
+            </div>
+            <div class="card-body">
+                {% for class_obj in teacher_classes %}
+                <div class="mb-3">
+                    <h6 class="text-primary">{{ class_obj.name }}</h6>
+                    {% if class_obj.subjects %}
+                    <div class="row">
+                        {% for subject in class_obj.subjects %}
+                        <div class="col-md-4 mb-2">
+                            <span class="badge bg-info">{{ subject.name }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No subjects assigned to this class yet.</p>
+                    {% endif %}
+                </div>
+                {% if not loop.last %}
+                <hr>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Analytics Dashboard</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- User Analytics -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">User Distribution</h5>
+            </div>
+            <div class="card-body">
+                {% if user_stats %}
+                    {% for stat in user_stats %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{{ stat.user_type.title() }}s</span>
+                        <span class="badge bg-{{ 'primary' if stat.user_type == 'teacher' else 'success' if stat.user_type == 'student' else 'warning' }}">
+                            {{ stat.count }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No user data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Assignment Status Distribution</h5>
+            </div>
+            <div class="card-body">
+                {% if assignment_stats %}
+                    {% for stat in assignment_stats %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{{ stat.status.replace('_', ' ').title() }}</span>
+                        <span class="badge bg-{{ 'success' if stat.status == 'completed' else 'primary' if stat.status == 'in_progress' else 'warning' if stat.status == 'pending' else 'danger' }}">
+                            {{ stat.count }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No assignment data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Task Analytics -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Task Priority Distribution</h5>
+            </div>
+            <div class="card-body">
+                {% if priority_stats %}
+                    {% for stat in priority_stats %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{{ stat.priority.replace('_', ' ').title() }}</span>
+                        <span class="badge bg-{{ 'danger' if stat.priority == 'urgent_important' else 'warning' if stat.priority in ['high_priority', 'urgent_not_important'] else 'info' if stat.priority in ['important_not_urgent', 'medium_priority'] else 'secondary' }}">
+                            {{ stat.count }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No task data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly User Registrations -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Monthly User Registrations (Last 12 Months)</h5>
+            </div>
+            <div class="card-body">
+                {% if monthly_users %}
+                    <div class="row">
+                        {% for stat in monthly_users %}
+                        <div class="col-md-3 mb-2">
+                            <div class="border rounded p-2 text-center">
+                                <h6 class="mb-1">{{ stat.month }}</h6>
+                                <span class="badge bg-primary">{{ stat.count }} users</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No registration data available for the last 12 months</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Key Metrics Summary -->
+<div class="row">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-primary">{{ user_stats|sum(attribute='count') if user_stats else 0 }}</h3>
+                <small>Total Users</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-success">{{ priority_stats|sum(attribute='count') if priority_stats else 0 }}</h3>
+                <small>Total Tasks</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-info">{{ assignment_stats|sum(attribute='count') if assignment_stats else 0 }}</h3>
+                <small>Total Assignments</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                {% set completed_assignments = assignment_stats|selectattr('status', 'equalto', 'completed')|sum(attribute='count') if assignment_stats else 0 %}
+                {% set total_assignments = assignment_stats|sum(attribute='count') if assignment_stats else 0 %}
+                {% set completion_rate = (completed_assignments / total_assignments * 100)|round|int if total_assignments > 0 else 0 %}
+                <h3 class="text-warning">{{ completion_rate }}%</h3>
+                <small>Completion Rate</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

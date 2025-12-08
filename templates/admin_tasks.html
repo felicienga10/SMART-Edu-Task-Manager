@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Task Management</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Creator</th>
+                <th>Priority</th>
+                <th>Deadline</th>
+                <th>Assignments</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task, creator in tasks %}
+            <tr>
+                <td>{{ task.id }}</td>
+                <td>{{ task.title[:50] }}{% if task.title|length > 50 %}...{% endif %}</td>
+                <td>{{ creator.name }}</td>
+                <td>
+                    <span class="badge bg-{{ 'danger' if task.priority == 'urgent_important' else 'warning' if task.priority in ['high_priority', 'urgent_not_important'] else 'info' if task.priority in ['important_not_urgent', 'medium_priority'] else 'secondary' }}">
+                        {{ task.priority.replace('_', ' ').title() }}
+                    </span>
+                </td>
+                <td>{{ task.deadline.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    {% set completed = task.assignments|selectattr('status', 'equalto', 'completed')|list|length %}
+                    {% set total = task.assignments|length %}
+                    <small>{{ completed }}/{{ total }} completed</small>
+                    {% if total > 0 %}
+                        {% set progress_percent = (completed/total*100)|round|int %}
+                        <small class="text-muted">{{ progress_percent }}% complete</small>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if task.deadline < current_time %}
+                        <span class="badge bg-danger">Overdue</span>
+                    {% else %}
+                        <span class="badge bg-success">Active</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('teacher.task_progress', task_id=task.id) }}" class="btn btn-sm btn-outline-info" title="View Progress">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <form method="POST" action="{{ url_for('admin.delete_task', task_id=task.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this task? All related assignments and submissions will also be deleted.')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Task">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if tasks|length == 0 %}
+<div class="alert alert-info">
+    <h4>No tasks found</h4>
+    <p>No tasks have been created yet.</p>
+</div>
+{% endif %}
+
+<!-- Task Statistics -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-primary">{{ tasks|length }}</h3>
+                <small>Total Tasks</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-danger">
+                    {% set overdue_count = 0 %}
+                    {% for task, creator in tasks %}
+                        {% if task.deadline < current_time %}
+                            {% set overdue_count = overdue_count + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ overdue_count }}
+                </h3>
+                <small>Overdue Tasks</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-success">
+                    {% set total_assignments = 0 %}
+                    {% set completed_assignments = 0 %}
+                    {% for task, creator in tasks %}
+                        {% set total_assignments = total_assignments + task.assignments|length %}
+                        {% set completed_assignments = completed_assignments + task.assignments|selectattr('status', 'equalto', 'completed')|list|length %}
+                    {% endfor %}
+                    {{ completed_assignments }}
+                </h3>
+                <small>Completed Assignments</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-info">
+                    {% if total_assignments > 0 %}
+                        {{ ((completed_assignments / total_assignments * 100)|round|int) }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </h3>
+                <small>Completion Rate</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

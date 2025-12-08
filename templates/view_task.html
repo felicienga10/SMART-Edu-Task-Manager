@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>{{ assignment.task.title }}</h2>
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Task Details</h5>
+        <p><strong>Description:</strong> {{ assignment.task.description }}</p>
+        <p><strong>Deadline:</strong> {{ assignment.task.deadline.strftime('%Y-%m-%d %H:%M') }}</p>
+        <p><strong>Priority:</strong> 
+            <span class="badge 
+                {% if assignment.task.priority == 'urgent_important' %}bg-danger
+                {% elif assignment.task.priority == 'high_priority' %}bg-warning
+                {% elif assignment.task.priority == 'medium_priority' %}bg-info
+                {% else %}bg-secondary{% endif %}">
+                {{ assignment.task.priority.replace('_', ' ').title() }}
+            </span>
+        </p>
+        {% if assignment.task.instructions %}
+        <p><strong>Instructions:</strong> {{ assignment.task.instructions }}</p>
+        {% endif %}
+        {% if assignment.task.file_path %}
+        <div class="alert alert-info">
+            <strong>📎 Attached File:</strong>
+            <a href="{{ url_for('student.download_student_task_file', task_id=assignment.task.id) }}" class="btn btn-sm btn-primary ms-2">
+                <i class="fas fa-download"></i> Download File
+            </a>
+        </div>
+        {% endif %}
+        <p><strong>Status:</strong> 
+            <span class="badge 
+                {% if assignment.status == 'pending' %}bg-secondary
+                {% elif assignment.status == 'in_progress' %}bg-primary
+                {% elif assignment.status == 'completed' %}bg-success
+                {% else %}bg-danger{% endif %}">
+                {{ assignment.status.replace('_', ' ').title() }}
+            </span>
+        </p>
+    </div>
+</div>
+
+{% set submission = assignment.submissions|first if assignment.submissions else none %}
+{% if submission and (submission.score is not none or submission.feedback) %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Feedback & Grade</h5>
+        {% if submission.score is not none %}
+        <p><strong>Score:</strong> 
+            <span class="badge 
+                {% if submission.score >= 90 %}bg-success
+                {% elif submission.score >= 70 %}bg-info
+                {% elif submission.score >= 50 %}bg-warning
+                {% else %}bg-danger{% endif %} fs-6">
+                {{ submission.score }}/100
+            </span>
+        </p>
+        {% endif %}
+        {% if submission.feedback %}
+        <p><strong>Teacher Feedback:</strong></p>
+        <div class="alert alert-light border">
+            {{ submission.feedback|replace('\n', '<br>')|safe }}
+        </div>
+        {% endif %}
+        {% if submission.feedback_provided_at %}
+        <p><small class="text-muted">Graded on: {{ submission.feedback_provided_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<div class="d-flex gap-2">
+    {% if assignment.status == 'pending' %}
+        <a href="{{ url_for('student.start_task', assignment_id=assignment.id) }}" class="btn btn-primary">Start Working</a>
+    {% elif assignment.status == 'in_progress' %}
+        <a href="{{ url_for('student.submit_task', assignment_id=assignment.id) }}" class="btn btn-success">Submit Work</a>
+    {% endif %}
+    <a href="{{ url_for('student.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+{% endblock %}
